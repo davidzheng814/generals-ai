@@ -1,0 +1,16 @@
+"Map generation algorithm" - ugh
+Cities and Mountains both show up in fog of war as Obstacles
+"More variation in map sizes"
+
+There are half-turns, turns, and rounds
+	Rounds = every 25 turns
+	You can move units every half-turn
+	Generators (towers/villages/cities) and generals = one unit per turn
+	Owned squares = one unit per round
+Units
+	Movement will always leave at least one unit on the square
+	Moving a 2 strength army against an enemy army of strength 1 will kill the enemy army but leave the enemy with control of the tile
+	Neutral generators always regenerate up to 40 (but spawn with units between 40 and 50)
+Move Priority
+	If player A has move priority over player B, player A's move will execute first over player B's
+	Move priority between any two players alternates every move / half-turn
