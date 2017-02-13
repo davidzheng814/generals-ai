@@ -24,17 +24,16 @@ enum type {
   MOUNTAIN = 4,
 };
 
-enum direction {
-  NORTH = 0,
-  EAST = 1,
-  SOUTH = 2,
-  WEST = 3,
-};
-
 struct piece {
   type type;
   int8_t owner;
   uint32_t size;
+};
+
+struct move {
+  int loc1;
+  int loc2;
+  bool half_move;
 };
 
 class Game {
@@ -50,13 +49,14 @@ class Game {
     Game();
     ~Game();
     void start(vector<int> &mountains, vector<int> &cities, vector<int> &generals);
-    void make_move(int player, int position, direction dir, bool half_move);
+    void make_move(move m);
     bool is_gameover();
 
   private:
     void generate();
     void next_move();
     void create_vision(int player, int position);
+    bool is_valid_move(move m);
 };
 
 #endif
