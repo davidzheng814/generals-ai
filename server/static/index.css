@@ -1,0 +1,68 @@
+.square {
+  width: 40px;
+  height: 40px;
+  padding: 0px;
+  border: 1px solid black;
+  background-position: center;
+  background-size: 80% 80%;
+  background-color: #cccccc;
+  background-repeat: no-repeat;
+  text-align:center;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  text-shadow: 1px 1px #000000;
+}
+
+.empty {
+  background-color: #e5e5e5;
+}
+
+.general {
+  background-color: #999999;
+  background-image: url(/static/images/crown.png);
+}
+
+.city {
+  background-color: #777777;
+  background-image: url(/static/images/city.png);
+}
+
+.mountain {
+  background-color: #cccccc;
+  background-image: url(/static/images/mountain.png);
+}
+
+.color-0 {
+  background-color: red;
+}
+
+.color-1 {
+  background-color: #3253c9;
+}
+
+.color-2 {
+  background-color: green;
+}
+
+#board {
+  cellspacing: 0;
+  border-collapse: collapse;
+}
+
+#start-game {
+  margin-bottom: 20px;
+}
+
+#scores {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: white;
+}
+
+#play-game {
+}
+
+#replay-box {
+  margin-bottom: 80px;
+}

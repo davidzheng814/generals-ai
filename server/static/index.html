@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+  </head>
+  <body>
+    <div id="start">
+      <input type="text" placeholder="Replay Id" id="replay-form">
+      <button id="start-game">Start Game</button>
+    </div>
+
+    <div id="replay-box">
+    </div>
+
+    <table id="scores">
+    </table>
+
+    <table id="board">
+    </table>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js">
+    </script> 
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="/static/game.js"></script>
+  </body>
+</html>
