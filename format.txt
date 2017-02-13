@@ -15,7 +15,7 @@ Map Layout:
 action new_piece [new_piece] [loc]
 
 Move:
-1. action next_move (Called at the beginning of each new move.)
+1. action next_move [player] (Called at the beginning of each new move.)
 2. action move [new_piece1] [new_piece2] [loc1] [loc2]
 3. action set_land [player] [size]
 4. action set_army [player] [size]
