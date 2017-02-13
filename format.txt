@@ -20,6 +20,17 @@ Move:
 3. action set_land [player] [size]
 4. action set_army [player] [size]
 
-Engine Input Interface:
+Engine Input Interface
+----------------------
+
+setting board_width [board_width]
+setting board_height [board_height]
+setting start_player [player]
+setting usernames [username0] [username1] ...
+setting generals [loc0] [loc1] ...
+setting mountains [loc0] [loc1] ...
+setting cities [loc0] [loc1] ...
+start
 action move [loc1] [loc2]
 action nomove
+
