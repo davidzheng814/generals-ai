@@ -1,0 +1,25 @@
+Engine Output Interface
+-----------------------
+
+Sets settings for the game:
+setting num_players [num_players]
+setting start_player [start_player]
+setting board_width [board_width]
+setting board_height [board_height]
+setting usernames [username0] [username1] ...
+
+Piece Format:
+type=[type] [owner=[player]] [size=[size]]
+
+Map Layout:
+action new_piece [new_piece] [loc]
+
+Move: (Called at the beginning of each new move.)
+action move [new_piece1] [new_piece2] [loc]
+action set_land [size]
+action set_army [size]
+action next_move
+
+Engine Input Interface:
+action move [loc1] [loc2]
+action nomove
