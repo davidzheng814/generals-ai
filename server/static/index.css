@@ -11,6 +11,8 @@
   color: white;
   font-family: 'Roboto', sans-serif;
   text-shadow: 1px 1px #000000;
+  user-select: none;
+  cursor:pointer;
 }
 
 .empty {

@@ -1,11 +1,20 @@
 function startGame(settings) {
-  actions = settings.actions;
-  num_players = settings.num_players;
+  if (!settings) {
+    actions = [];
+    num_players = 2;
+    cur_player = 0;
+    board_width = 21;
+    board_height = 18;
+    usernames = ['dzd123', 'edwardpark97'];
+  } else {
+    actions = settings.actions;
+    num_players = settings.num_players;
+    cur_player = settings.start_player;
+    board_width = settings.board_width;
+    board_height = settings.board_height;
+    usernames = settings.usernames;
+  }
   move = -1;
-  cur_player = settings.start_player;
-  board_width = settings.board_width;
-  board_height = settings.board_height;
-  usernames = settings.usernames;
 
   $('#scores').append($('<tr>')
     .append($('<th>').text('Username'))
@@ -56,14 +65,17 @@ function setPiece(piece, loc) {
   switch (piece.type) {
     case "EMPTY":
       board_elts[loc].attr({class:'square empty'});
+      board_elts[loc].text('');
       break;
     case "GENERAL":
       board_elts[loc].attr({class:'square general color-'+piece.owner});
       if (piece.size > 0) board_elts[loc].text(piece.size);
+      else board_elts[loc].text('');
       break;
     case "ARMY":
       board_elts[loc].attr({class:'square army color-'+piece.owner});
       if (piece.size > 0) board_elts[loc].text(piece.size);
+      else board_elts[loc].text('');
       break;
     case "CITY":
       board_elts[loc].attr({class:'square city'});
@@ -71,9 +83,11 @@ function setPiece(piece, loc) {
         board_elts[loc].addClass('color-'+piece.owner);
       }
       if (piece.size > 0) board_elts[loc].text(piece.size);
+      else board_elts[loc].text('');
       break;
     case "MOUNTAIN":
       board_elts[loc].attr({class:'square mountain'});
+      board_elts[loc].text('');
       break;
   }
 }
@@ -143,6 +157,56 @@ $(document).ready(function() {
     $('#replay-form').val('');
     socket.emit('new_game', replay_id);
     $('#start').empty();
+  });
+
+  $('#map-builder').click(function() {
+    startGame();
+    pieces = [
+      {type:"EMPTY"},
+      {type:"MOUNTAIN"},
+      {type:"CITY", owner:-1, size:40},
+      {type:"GENERAL", owner:0, size:1},
+      {type:"GENERAL", owner:1, size:1},
+    ];
+
+    for (var i = 0; i < board_elts.length; ++i) {
+      var elt = board_elts[i];
+      elt.attr('piece_ind', 0);
+    }
+
+    $('#replay-box').append(
+      $('<button>').text('Save Map').click(function() {
+        generals = [-1, -1];
+        mountains = [];
+        cities = [];
+        for (var i = 0; i < board_elts.length; ++i) {
+          piece_ind = board_elts[i].attr('piece_ind');
+          if (piece_ind == 1) mountains.push(i);
+          else if (piece_ind == 2) cities.push(i);
+          else if (piece_ind == 3) generals[0] = i;
+          else if (piece_ind == 4) generals[1] = i;
+        }
+        lines = [
+          "setting board_width "+board_width,
+          "setting board_height "+board_height,
+          "setting start_player "+cur_player,
+          "setting usernames "+usernames.join(' '),
+          "setting generals "+generals.join(' '),
+          "setting mountains "+mountains.join(' '),
+          "setting cities "+cities.join(' '),
+        ];
+
+        socket.emit('save_map', lines.join('\n'));
+      })
+    );
+
+    $('.square').click(function() {
+      var piece_ind = parseInt($(this).attr('piece_ind'));
+      var loc = parseInt($(this).attr('ind'));
+      var new_piece_ind = (piece_ind + 1) % pieces.length;
+      setPiece(pieces[new_piece_ind], loc);
+      $(this).attr('piece_ind', new_piece_ind);
+    });
   });
 });
 
