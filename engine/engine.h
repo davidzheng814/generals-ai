@@ -7,6 +7,7 @@
 using namespace std;
 
 #define NUM_PLAYERS 2
+#define START_PLAYER 0
 #define BOARD_WIDTH 15
 #define BOARD_HEIGHT 15
 #define BOARD_SIZE BOARD_WIDTH*BOARD_HEIGHT
@@ -30,7 +31,7 @@ struct piece {
   uint32_t size;
 };
 
-struct move {
+struct move_t {
   int loc1;
   int loc2;
   bool half_move;
@@ -38,6 +39,8 @@ struct move {
 
 class Game {
   public:
+    bool verbose;
+
     int move;
     piece board[BOARD_SIZE];
     bool vision[NUM_PLAYERS][BOARD_SIZE];
@@ -46,17 +49,17 @@ class Game {
     int num_land[NUM_PLAYERS];
     int num_units[NUM_PLAYERS];
 
-    Game();
+    Game(bool verbose);
     ~Game();
     void start(vector<int> &mountains, vector<int> &cities, vector<int> &generals);
-    void make_move(move m);
+    void make_move(move_t m);
     bool is_gameover();
 
   private:
     void generate();
     void next_move();
     void create_vision(int player, int position);
-    bool is_valid_move(move m);
+    bool is_valid_move(move_t m);
 };
 
 #endif

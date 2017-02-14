@@ -1,7 +1,18 @@
 #include "./engine.h"
+#include <stdio.h>
+#include <iostream>
 #include <assert.h>
 
-Game::Game() {
+Game::Game(bool verbose) {
+  this->verbose = verbose;
+
+  if (this->verbose) {
+    cout << "setting num_players " << NUM_PLAYERS << "\n";
+    cout << "setting start_player " << START_PLAYER << "\n";
+    cout << "setting board_width " << BOARD_WIDTH << "\n";
+    cout << "setting board_height " << BOARD_HEIGHT << "\n";
+    cout << "setting usernames " << "why_do_we_need_usernames" << "\n";
+  }
 }
 
 Game::~Game() {
@@ -31,7 +42,11 @@ void Game::create_vision(int player, int position) {
   }
 }
 
-bool Game::is_valid_move(move m) {
+bool Game::is_valid_move(move_t m) {
+  if (player(this->move) != this->board[m.loc1].owner) {
+    return false;
+  }
+
   if (m.loc1 < 0 || BOARD_SIZE <= m.loc1 || m.loc2 < 0 || BOARD_SIZE <= m.loc2) {
     return false;
   }
@@ -47,6 +62,15 @@ bool Game::is_valid_move(move m) {
   return true;
 }
 
+string Types[] =
+{
+    "EMPTY",
+    "GENERAL",
+    "ARMY",
+    "CITY",
+    "MOUNTAIN"
+};
+
 // Initializes all relevant fields at the start of a new game
 void Game::start(vector<int> &mountains,
     vector<int> &cities, vector<int> &generals) {
@@ -56,15 +80,24 @@ void Game::start(vector<int> &mountains,
 
   for (size_t i = 0; i < mountains.size(); ++i) {
     this->board[mountains[i]] = {MOUNTAIN, -1, 0};
+    if (this->verbose) {
+      cout << "action new_piece type=MOUNTAIN " << mountains[i] << "\n";
+    }
   }
 
   for (size_t i = 0; i < cities.size(); ++i) {
     this->board[cities[i]] = {CITY, -1, 40};
+    if (this->verbose) {
+      cout << "action new_piece type=CITY,size=40 " << cities[i] << "\n";
+    }
   }
 
   for (size_t i = 0; i < generals.size(); ++i) {
     this->board[generals[i]] = {GENERAL, (int8_t)i, 0};
     this->create_vision(i, generals[i]);
+    if (this->verbose) {
+      cout << "action new_piece type=GENERAL,owner=" << i << " " << generals[i] << "\n";
+    }
   }
 
   this->move = 0;
@@ -72,8 +105,8 @@ void Game::start(vector<int> &mountains,
   for (int i = 0; i < NUM_PLAYERS; ++i) {
     this->is_alive[i] = true;
     this->num_land[i] = 1;
-    ORDER[i] = i;
-    ORDER[MPT - i - 1] = i;
+    ORDER[i] = (i + START_PLAYER) % NUM_PLAYERS;
+    ORDER[MPT - i - 1] = (i + START_PLAYER) % NUM_PLAYERS;
   }
 }
 
@@ -83,14 +116,18 @@ void Game::next_move() {
     this->move++;
     this->generate();
     if (this->is_alive[player(this->move)]) {
+      if (this->verbose) {
+        cout << "action next_move " << player(this->move) << "\n";
+      }
       break;
     }
   }
 }
 
 // Makes the given move
-void make_move(move m) {
+void Game::make_move(move_t m) {
   if (!this->is_valid_move(m)) {
+    cout << "Invalid move\n";
     assert("Invalid move");
   }
 
@@ -105,8 +142,8 @@ void make_move(move m) {
     end.size = end.size + num_to_move;
   } else {
     // Attacking enemy tile
-    end.size = end.size - num_to_move;
-    if (end.size < 0) {
+    int end_size = end.size - num_to_move;
+    if (end_size < 0) {
       // Successfully captured
       if (end.type == GENERAL) {
         for (size_t i = 0; i < BOARD_SIZE; ++i) {
@@ -117,10 +154,16 @@ void make_move(move m) {
         end.type = CITY;
       }
 
-      end.size = -1 * end.size;
+      end.size = -1 * end_size;
       end.owner = start.owner;
+    } else {
+      end.size = end_size;
     }
   }
+
+  cout << "action move type=" << Types[start.type] << ",owner=" << start.owner << ",size=" << start.size 
+    << " type=" << Types[end.type] << ",owner=" << end.owner << ",size=" << end.size << " " << m.loc1 << " "
+    << m.loc2 << "\n";
 }
 
 // Determines whether the game is over
@@ -131,3 +174,29 @@ bool Game::is_gameover() {
   return true;
 }
 
+// Splits the input string based on whitespace
+vector<string> split(string input) {
+  vector<string> array;
+  size_t pos = 0, found;
+  while((found = input.find_first_of(' ', pos)) != string::npos) {
+      array.push_back(input.substr(pos, found - pos));
+      pos = found+1;
+  }
+  array.push_back(input.substr(pos));
+  return array;
+}
+
+int main(int argc, char* argv[]) {
+  // for (string line; getline(cin, line);) {
+  //   vector<string> splitted = split(line);
+
+  //   for (size_t i = 0; i < splitted.size(); ++i) {
+  //     cout << splitted[i] << endl;
+  //     printf("%d\n", "hello" == splitted[i]);
+  //   }
+
+  //   cout << line << endl;
+  // }
+  // return 0;
+  Game(true);
+}
