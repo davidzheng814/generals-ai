@@ -6,13 +6,13 @@
 
 using namespace std;
 
-#define NUM_PLAYERS 2
-#define START_PLAYER 0
-#define BOARD_WIDTH 15
-#define BOARD_HEIGHT 15
+extern int NUM_PLAYERS;
+extern int START_PLAYER;
+extern int BOARD_WIDTH;
+extern int BOARD_HEIGHT;
 #define BOARD_SIZE BOARD_WIDTH*BOARD_HEIGHT
 #define MPT NUM_PLAYERS*2  // Moves per Turn
-int ORDER[MPT];
+extern int ORDER[]; // size chosen arbitrarily. 
 
 #define player(a) ORDER[a % MPT]  // Gives the index of the player who needs to move this turn
 #define SPAWNS(a) a == GENERAL || a == CITY  // Whether a type spawns a unit
@@ -31,28 +31,34 @@ struct piece {
   uint32_t size;
 };
 
+// Let (-1, -1, false) be no move.
 struct move_t {
   int loc1;
   int loc2;
   bool half_move;
 };
 
+
+class Player;
 class Game {
   public:
+    int winner;
     bool verbose;
+    bool use_input;
 
     int move;
-    piece board[BOARD_SIZE];
-    bool vision[NUM_PLAYERS][BOARD_SIZE];
-    bool is_alive[NUM_PLAYERS];
+    piece *board;
+    bool **vision;
+    bool *is_alive;
 
-    int num_land[NUM_PLAYERS];
-    int num_units[NUM_PLAYERS];
+    int *num_land;
+    int *num_army;
 
-    Game(bool verbose);
+    Game(bool use_input, bool verbose);
     ~Game();
-    void start(vector<int> &mountains, vector<int> &cities, vector<int> &generals);
-    void make_move(move_t m);
+    void start(Player **players);
+    void init(vector<int> &mountains, vector<int> &cities, vector<int> &generals);
+    bool make_move(move_t m);
     bool is_gameover();
 
   private:

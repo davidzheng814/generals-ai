@@ -16,7 +16,7 @@ action new_piece [new_piece] [loc]
 
 Move:
 1. action next_move [player] (Called at the beginning of each new move.)
-2. action move [new_piece1] [new_piece2] [loc1] [loc2]
+2. action [move [new_piece1] [new_piece2] [loc1] [loc2]]|[no_move]
 3. action set_land [player] [size]
 4. action set_army [player] [size]
 
@@ -31,6 +31,7 @@ setting generals [loc0] [loc1] ...
 setting mountains [loc0] [loc1] ...
 setting cities [loc0] [loc1] ...
 start
-action move [loc1] [loc2] [half_move]
-action nomove
+action move [loc1] [loc2]
+action half_move [loc1] [loc2]
+action no_move
 
