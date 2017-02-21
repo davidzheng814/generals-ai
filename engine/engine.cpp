@@ -77,9 +77,9 @@ void Game::generate() {
   for (int i = 0; i < BOARD_SIZE; ++i) {
     piece &p = this->board[i];
     if (p.type == GENERAL || 
-      (p.type == CITY && p.owner >= 0) || 
+      (p.type == CITY && (p.owner >= 0 || p.size < 40)) || 
       (p.type == ARMY && army_generation)) {
-      // Is a general or a nonneutral city or an army on the 25th turn
+      // Is a general or a city or an army on the 25th turn
       p.size++;
       this->num_army[p.owner]++;
       cout << "action set_piece type=" << Types[p.type] << ",owner="
@@ -292,6 +292,7 @@ bool Game::make_move(move_t m) {
           }
         }
         end.type = CITY;
+        this->is_alive[end.owner] = false;
       }
 
       if (end.owner >= 0) {
@@ -303,7 +304,9 @@ bool Game::make_move(move_t m) {
 
       end.size = -1 * end_size;
       end.owner = start.owner;
-      end.type = ARMY;
+      if (end.type == EMPTY) {
+        end.type = ARMY;
+      }
       this->create_vision(start.owner, m.loc2);
     } else {
       // Unsuccesfully captured

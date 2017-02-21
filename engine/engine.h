@@ -13,7 +13,7 @@ extern int START_PLAYER;
 extern int BOARD_WIDTH;
 extern int BOARD_HEIGHT;
 #define BOARD_SIZE BOARD_WIDTH*BOARD_HEIGHT
-#define MPT NUM_PLAYERS*2  // Moves per Turn
+#define MPT (NUM_PLAYERS*2)  // Moves per Turn
 extern int ORDER[]; // size chosen arbitrarily. 
 
 #define player(a) ORDER[(a) % MPT]  // Gives the index of the player who needs to move this turn
