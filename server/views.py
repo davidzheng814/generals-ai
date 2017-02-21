@@ -19,7 +19,7 @@ def process_piece(piece_str):
         piece[key] = val
     return piece
 
-def process_replay(line):
+def process_replay(lines):
     settings = {}
     actions = settings['actions'] = []
 
@@ -53,6 +53,16 @@ def process_replay(line):
                 'new_piece2':process_piece(tokens[3]),
                 'loc1':int(tokens[4]),
                 'loc2':int(tokens[5]),
+            })
+        elif line.startswith('action no_move'):
+            actions.append({
+              'type':'no_move'
+            })
+        elif line.startswith('action set_piece'):
+            actions.append({
+                'type':'set_piece',
+                'new_piece':int(tokens[2]),
+                'loc':int(tokens[3]),
             })
         elif line.startswith('action set_land'):
             actions.append({

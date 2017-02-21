@@ -101,7 +101,8 @@ void Game::create_vision(int player, int position) {
 }
 
 bool Game::is_valid_move(move_t m) {
-  if (player(this->move) != this->board[m.loc1].owner) {
+  if (player(this->move) != this->board[m.loc1].owner
+      || this->board[m.loc1].size <= 1) {
     return false;
   }
 
@@ -109,7 +110,8 @@ bool Game::is_valid_move(move_t m) {
     return false;
   }
 
-  if (abs(m.loc1 - m.loc2) != 1 && abs(m.loc1 - m.loc2) != BOARD_WIDTH) {
+  if (abs(COL_OF(m.loc1) - COL_OF(m.loc2)) != 1
+      && abs(m.loc1 - m.loc2) != BOARD_WIDTH) {
     return false;
   }
 
@@ -118,6 +120,47 @@ bool Game::is_valid_move(move_t m) {
   }
 
   return true;
+}
+
+// Generates all possible moves and stores into this->moves
+void Game::set_all_moves() {
+  this->moves.clear();
+  for (int i = 0; i < BOARD_SIZE; ++i) {
+    if (player(this->move) == this->board[i].owner
+        && this->board[i].size > 1) {
+      int row = ROW_OF(i), col = COL_OF(i);
+      if (row != 0) {
+        int loc2 = IND_OF(row-1, col);
+        if (this->board[loc2].type != MOUNTAIN) {
+          this->moves.push_back({i, loc2, false});
+          this->moves.push_back({i, loc2, true});
+        }
+      }
+      if (row != BOARD_HEIGHT - 1) {
+        int loc2 = IND_OF(row+1, col);
+        if (this->board[loc2].type != MOUNTAIN) {
+          this->moves.push_back({i, loc2, false});
+          this->moves.push_back({i, loc2, true});
+        }
+      }
+      if (col != 0) {
+        int loc2 = IND_OF(row, col-1);
+        if (this->board[loc2].type != MOUNTAIN) {
+          this->moves.push_back({i, loc2, false});
+          this->moves.push_back({i, loc2, true});
+        }
+      }
+      if (col != BOARD_WIDTH - 1) {
+        int loc2 = IND_OF(row, col+1);
+        if (this->board[loc2].type != MOUNTAIN) {
+          this->moves.push_back({i, loc2, false});
+          this->moves.push_back({i, loc2, true});
+        }
+      }
+    }
+  }
+
+  this->moves.push_back(NO_MOVE);
 }
 
 // Initializes all relevant fields at the start of a new game
@@ -142,10 +185,10 @@ void Game::init(vector<int> &mountains,
   }
 
   for (size_t i = 0; i < generals.size(); ++i) {
-    this->board[generals[i]] = {GENERAL, (int8_t)i, 0};
+    this->board[generals[i]] = {GENERAL, (int8_t)i, 1};
     this->create_vision(i, generals[i]);
     if (this->verbose) {
-      cout << "action new_piece type=GENERAL,owner=" << i << " " << generals[i] << "\n";
+      cout << "action new_piece type=GENERAL,owner=" << i << ",size=1 " << generals[i] << "\n";
     }
   }
 
@@ -154,9 +197,12 @@ void Game::init(vector<int> &mountains,
   for (int i = 0; i < NUM_PLAYERS; ++i) {
     this->is_alive[i] = true;
     this->num_land[i] = 1;
+    this->num_army[i] = 1;
     ORDER[i] = (i + START_PLAYER) % NUM_PLAYERS;
     ORDER[MPT - i - 1] = (i + START_PLAYER) % NUM_PLAYERS;
   }
+
+  this->set_all_moves();
 }
 
 // Inits the game and then runs the game by calling players.
@@ -176,7 +222,7 @@ void Game::start(Player **players) {
       } else if (tokens[1] == "half_move") {
         this->make_move({stoi(tokens[2]), stoi(tokens[3]), true});
       } else if (tokens[1] == "no_move") {
-        this->make_move({-1, -1, false});
+        this->make_move(NO_MOVE);
       } else {
         cout << "Invalid Move!\n";
       }
@@ -211,21 +257,29 @@ void Game::next_move() {
 // Makes the given move
 // Returns true if valid move;
 bool Game::make_move(move_t m) {
+  if (m.loc1 == -1) { // no move
+    if (this->verbose) cout << "action no_move\n";
+    this->next_move();
+    this->set_all_moves();
+
+    return true;
+  }
+
   if (!this->is_valid_move(m)) {
     cout << "Invalid move\n";
     assert("Invalid move");
     return false;
   }
 
-  piece start = this->board[m.loc1];
-  piece end = this->board[m.loc2];
+  piece &start = this->board[m.loc1];
+  piece &end = this->board[m.loc2];
 
-  int num_to_move = m.half_move ? (start.size - 1) : (start.size - 1) / 2;
-  start.size = start.size - num_to_move;
+  int num_to_move = m.half_move ? start.size / 2 : start.size - 1;
+  start.size -= num_to_move;
 
   if (start.owner == end.owner) {
     // Reinforcing your own tile
-    end.size = end.size + num_to_move;
+    end.size += num_to_move;
   } else {
     // Attacking enemy tile
     int end_size = end.size - num_to_move;
@@ -249,6 +303,7 @@ bool Game::make_move(move_t m) {
 
       end.size = -1 * end_size;
       end.owner = start.owner;
+      end.type = ARMY;
       this->create_vision(start.owner, m.loc2);
     } else {
       // Unsuccesfully captured
@@ -261,13 +316,14 @@ bool Game::make_move(move_t m) {
 
   if (this->verbose) {
     cout << "action move type=" << Types[start.type]
-         << ",owner=" << start.owner << ",size=" << start.size 
-         << " type=" << Types[end.type] << ",owner=" << end.owner
+         << ",owner=" << (int)start.owner << ",size=" << start.size 
+         << " type=" << Types[end.type] << ",owner=" << (int)end.owner
          << ",size=" << end.size << " " << m.loc1 << " "
          << m.loc2 << "\n";
   }
 
   this->next_move();
+  this->set_all_moves();
 
   return true;
 }
@@ -293,6 +349,8 @@ vector<string> split(string input) {
 }
 
 int main(int argc, const char* argv[]) {
+  srand(time(NULL));
+
   bool is_verbose = false;
   bool use_input = false;
   Player *players[2] = {
@@ -319,7 +377,6 @@ int main(int argc, const char* argv[]) {
   string line;
   while (true) {
     getline(cin, line);
-    cout << line << "\n";
     if (line == "start") break;
     const vector<string> tokens = split(line, ' ');
     if (tokens.size() < 2) break;

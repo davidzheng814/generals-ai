@@ -14,3 +14,6 @@ Units
 Move Priority
 	If player A has move priority over player B, player A's move will execute first over player B's
 	Move priority between any two players alternates every move / half-turn
+
+  To run a game:
+  e.g. ./engine -v -p0 random -p1 random < ../server/maps/map1.txt > ../server/replays/replay1.txt

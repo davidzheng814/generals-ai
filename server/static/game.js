@@ -1,12 +1,14 @@
 function startGame(settings) {
   if (!settings) {
     actions = [];
+    hist = [];
     num_players = 2;
     cur_player = 0;
-    board_width = 21;
-    board_height = 18;
+    board_width = 8;
+    board_height = 8;
     usernames = ['dzd123', 'edwardpark97'];
   } else {
+    hist = [];
     actions = settings.actions;
     num_players = settings.num_players;
     cur_player = settings.start_player;
@@ -104,29 +106,88 @@ function setArmy(color, size) {
 
 function applyActions(movesToProcess=-1) {
   movesProcessed = 0;
-  console.log("applying");
   while (actions.length > 0) {
+    var action = actions[0];
+    console.log(action, actions.length);
+    actions.shift();
     switch (action.type) {
       case 'new_piece':
+      case 'set_piece':
+        hist.push({type:'set_piece', new_piece:board[action.loc], loc:action.loc});
         setPiece(action.new_piece, action.loc);
         break;
       case 'move':
+        hist.push({
+          type:'move',
+          new_piece1:board[action.loc1],
+          loc1:action.loc1,
+          new_piece2:board[action.loc2],
+          loc2:action.loc2
+        });
         setPiece(action.new_piece1, action.loc1);
         setPiece(action.new_piece2, action.loc2);
         break;
       case 'set_land':
+        hist.push({type:'set_land', color:action.color, size:land[action.color]});
         setLand(action.color, action.size);
+        break;
       case 'set_army':
+        hist.push({type:'set_army', color:action.color, size:army[action.color]});
         setArmy(action.color, action.size);
+        break;
       case 'next_move':
+        hist.push({type:'next_move', next_player:cur_player});
         move++;
         cur_player = action.next_player;
         movesProcessed++;
         if (movesToProcess != -1 && movesProcessed >= movesToProcess) {
           return;
         }
+        break;
     }
-    actions.shift();
+  }
+}
+
+function reverseActions(movesToProcess=-1) {
+  movesProcessed = 0;
+  while (hist.length > 0) {
+    var action = hist.pop();
+    console.log(action);
+    switch (action.type) {
+      case 'new_piece':
+      case 'set_piece':
+        actions.unshift({type:'set_piece', new_piece:board[action.loc], loc:action.loc});
+        setPiece(action.new_piece, action.loc);
+        break;
+      case 'move':
+        actions.unshift({
+          type:'move',
+          new_piece1:board[action.loc1],
+          loc1:action.loc1,
+          new_piece2:board[action.loc2],
+          loc2:action.loc2
+        });
+        setPiece(action.new_piece1, action.loc1);
+        setPiece(action.new_piece2, action.loc2);
+        break;
+      case 'set_land':
+        actions.unshift({type:'set_land', color:action.color, size:land[action.color]});
+        setLand(action.color, action.size);
+        break;
+      case 'set_army':
+        actions.unshift({type:'set_army', color:action.color, size:army[action.color]});
+        setArmy(action.color, action.size);
+        break;
+      case 'next_move':
+        movesProcessed++;
+        if (movesToProcess != -1 && movesProcessed > movesToProcess) {
+          return;
+        }
+        actions.unshift({type:'next_move', next_player:cur_player});
+        move--;
+        cur_player = action.next_player;
+        break;
+    }
   }
 }
 
@@ -135,10 +196,51 @@ $(document).ready(function() {
   socket.on('new_game', function(data) {
     $('#replay-box').append(
       $('<button>').text('Play Game').attr({id: 'play-game'})
-    );
+    ).append(
+      $('<input>').attr({placeholder: '1', id: 'speed'})
+    ).append(
+      $('<button>').text('Speed').attr({id: 'set-speed'})
+    ).append(
+      $('<button>').text('Step Forward').attr({id: 'step-forward'})
+    ).append(
+      $('<button>').text('Step Back').attr({id: 'step-back'})
+    ).append(
+      $('<button>').text('Step 4 Forward').attr({id: 'step-forward2'})
+    ).append(
+      $('<button>').text('Step 4 Back').attr({id: 'step-back2'})
+    )
 
     $('#play-game').click(function() {
-      setInterval(() => applyActions(1), 500);
+      replayInterval = setInterval(() => applyActions(1), 500);
+    });
+
+    $('#set-speed').click(function() {
+      var speed = parseFloat($('#speed').val());
+      if (replayInterval) {
+        window.clearInterval(replayInterval);
+      }
+
+      if (speed != 0) {
+        replayInterval = setInterval(() => applyActions(1), Math.round(500 / speed));
+      } else {
+        replayInterval = null;
+      }
+    });
+
+    $('#step-forward').click(function() {
+      applyActions(1);
+    });
+
+    $('#step-forward2').click(function() {
+      applyActions(4);
+    });
+
+    $('#step-back').click(function() {
+      reverseActions(1);
+    });
+
+    $('#step-back2').click(function() {
+      reverseActions(4);
     });
 
     startGame(data);
@@ -196,7 +298,7 @@ $(document).ready(function() {
           "setting cities "+cities.join(' '),
         ];
 
-        socket.emit('save_map', lines.join('\n'));
+        socket.emit('save_map', lines.join('\n') + '\n');
       })
     );
 

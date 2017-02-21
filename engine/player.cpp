@@ -1,5 +1,6 @@
 #include "./players.h"
 
 move_t RandomPlayer::act(Game *g) {
-  return {0, 1, true};
+  int num_moves = g->moves.size();
+  return g->moves[rand() % num_moves];
 }

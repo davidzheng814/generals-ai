@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -14,8 +16,12 @@ extern int BOARD_HEIGHT;
 #define MPT NUM_PLAYERS*2  // Moves per Turn
 extern int ORDER[]; // size chosen arbitrarily. 
 
-#define player(a) ORDER[a % MPT]  // Gives the index of the player who needs to move this turn
-#define SPAWNS(a) a == GENERAL || a == CITY  // Whether a type spawns a unit
+#define player(a) ORDER[(a) % MPT]  // Gives the index of the player who needs to move this turn
+#define SPAWNS(a) (a) == GENERAL || (a) == CITY  // Whether a type spawns a unit
+#define ROW_OF(a) (a) / BOARD_WIDTH
+#define COL_OF(a) (a) % BOARD_WIDTH
+#define IND_OF(a, b) (a) * BOARD_WIDTH + (b)
+#define NO_MOVE {-1, -1, false}
 
 enum type {
   EMPTY = 0,
@@ -53,6 +59,7 @@ class Game {
 
     int *num_land;
     int *num_army;
+    vector<move_t> moves;
 
     Game(bool use_input, bool verbose);
     ~Game();
@@ -64,6 +71,7 @@ class Game {
   private:
     void generate();
     void next_move();
+    void set_all_moves();
     void create_vision(int player, int position);
     bool is_valid_move(move_t m);
 };
