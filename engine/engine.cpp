@@ -75,7 +75,7 @@ void Game::generate() {
   bool army_generation = ((this->move / MPT) % 25 == 0);
 
   for (int i = 0; i < BOARD_SIZE; ++i) {
-    piece p = this->board[i];
+    piece &p = this->board[i];
     if (p.type == GENERAL || 
       (p.type == CITY && p.owner >= 0) || 
       (p.type == ARMY && army_generation)) {
@@ -83,7 +83,7 @@ void Game::generate() {
       p.size++;
       this->num_army[p.owner]++;
       cout << "action set_piece type=" << Types[p.type] << ",owner="
-        << p.owner << ",size=" << p.size << " " << i << "\n";
+        << (int)p.owner << ",size=" << p.size << " " << i << "\n";
     }
   }
 }
