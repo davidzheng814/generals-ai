@@ -17,8 +17,9 @@ action new_piece [new_piece] [loc]
 Move:
 1. action next_move [player] (Called at the beginning of each new move.)
 2. action [move [new_piece1] [new_piece2] [loc1] [loc2]]|[no_move]
-3. action set_land [player] [size]
-4. action set_army [player] [size]
+3. action set_piece [new_piece] [loc]
+4. action set_land [player] [size]
+5. action set_army [player] [size]
 
 Engine Input Interface
 ----------------------

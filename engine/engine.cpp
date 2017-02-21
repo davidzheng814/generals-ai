@@ -10,6 +10,15 @@ int BOARD_WIDTH = 15;
 int BOARD_HEIGHT = 15;
 int ORDER[32];
 
+string Types[] =
+{
+    "EMPTY",
+    "GENERAL",
+    "ARMY",
+    "CITY",
+    "MOUNTAIN"
+};
+
 const vector<string> split(const string& s, const char& c)
 {
 	string buff{""};
@@ -63,9 +72,18 @@ Game::~Game() {
 void Game::generate() {
   if (this->move % MPT != 0) return;
 
+  bool army_generation = ((this->move / MPT) % 25 == 0);
+
   for (int i = 0; i < BOARD_SIZE; ++i) {
-    if (SPAWNS(this->board[i].type)) {
-      this->board[i].size++;
+    piece p = this->board[i];
+    if (p.type == GENERAL || 
+      (p.type == CITY && p.owner >= 0) || 
+      (p.type == ARMY && army_generation)) {
+      // Is a general or a nonneutral city or an army on the 25th turn
+      p.size++;
+      this->num_army[p.owner]++;
+      cout << "action set_piece type=" << Types[p.type] << ",owner="
+        << p.owner << ",size=" << p.size << " " << i << "\n";
     }
   }
 }
@@ -101,15 +119,6 @@ bool Game::is_valid_move(move_t m) {
 
   return true;
 }
-
-string Types[] =
-{
-    "EMPTY",
-    "GENERAL",
-    "ARMY",
-    "CITY",
-    "MOUNTAIN"
-};
 
 // Initializes all relevant fields at the start of a new game
 void Game::init(vector<int> &mountains,
@@ -231,9 +240,21 @@ bool Game::make_move(move_t m) {
         end.type = CITY;
       }
 
+      if (end.owner >= 0) {
+        this->num_army[end.owner] -= end.size;
+        this->num_land[end.owner]--;
+      }
+      this->num_army[start.owner] -= end.size;
+      this->num_land[start.owner]++;
+
       end.size = -1 * end_size;
       end.owner = start.owner;
+      this->create_vision(start.owner, m.loc2);
     } else {
+      // Unsuccesfully captured
+      this->num_army[end.owner] -= num_to_move;
+      this->num_army[start.owner] -= num_to_move;
+
       end.size = end_size;
     }
   }
