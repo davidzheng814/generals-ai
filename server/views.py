@@ -41,6 +41,12 @@ def process_replay(lines):
                 'new_piece':process_piece(tokens[2]),
                 'loc':int(tokens[3])
             })
+        elif line.startswith('action set_piece'):
+            actions.append({
+                'type':'set_piece',
+                'new_piece':process_piece(tokens[2]),
+                'loc':int(tokens[3])
+            })
         elif line.startswith('action next_move'):
             actions.append({
                 'type':'next_move',
@@ -86,6 +92,7 @@ def game_router(socketio):
     @socketio.on('new_game')
     def new_game(replay_id):
         filename = 'replays/' + replay_id + '.txt'
+        print filename
         if not os.path.isfile(filename):
             return
 

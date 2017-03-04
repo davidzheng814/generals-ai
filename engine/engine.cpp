@@ -242,12 +242,20 @@ void Game::next_move() {
   while (true) {
     this->move++;
     if (this->is_alive[player(this->move)]) {
-      this->generate();
       if (this->verbose) {
         int p = player(this->move);
         cout << "action set_land " << p << " " << this->num_land[p] << "\n";
         cout << "action set_army " << p << " " << this->num_army[p] << "\n";
         cout << "action next_move " << p << "\n";
+      }
+      if (this->move % MPT == 0) {
+        this->generate();
+        if (this->verbose) {
+          int p = player(this->move);
+          cout << "action set_land " << p << " " << this->num_land[p] << "\n";
+          cout << "action set_army " << p << " " << this->num_army[p] << "\n";
+          cout << "action next_move " << p << "\n";
+        }
       }
       break;
     }

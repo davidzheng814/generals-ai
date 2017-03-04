@@ -108,7 +108,6 @@ function applyActions(movesToProcess=-1) {
   movesProcessed = 0;
   while (actions.length > 0) {
     var action = actions[0];
-    console.log(action, actions.length);
     actions.shift();
     switch (action.type) {
       case 'new_piece':
@@ -126,6 +125,9 @@ function applyActions(movesToProcess=-1) {
         });
         setPiece(action.new_piece1, action.loc1);
         setPiece(action.new_piece2, action.loc2);
+        break;
+      case 'no_move':
+        hist.push({type:'no_move'});
         break;
       case 'set_land':
         hist.push({type:'set_land', color:action.color, size:land[action.color]});
@@ -152,7 +154,6 @@ function reverseActions(movesToProcess=-1) {
   movesProcessed = 0;
   while (hist.length > 0) {
     var action = hist.pop();
-    console.log(action);
     switch (action.type) {
       case 'new_piece':
       case 'set_piece':
@@ -170,6 +171,9 @@ function reverseActions(movesToProcess=-1) {
         setPiece(action.new_piece1, action.loc1);
         setPiece(action.new_piece2, action.loc2);
         break;
+      case 'no_move':
+        actions.unshift({type:'no_move'});
+        break;
       case 'set_land':
         actions.unshift({type:'set_land', color:action.color, size:land[action.color]});
         setLand(action.color, action.size);
@@ -181,6 +185,7 @@ function reverseActions(movesToProcess=-1) {
       case 'next_move':
         movesProcessed++;
         if (movesToProcess != -1 && movesProcessed > movesToProcess) {
+          hist.push(action);
           return;
         }
         actions.unshift({type:'next_move', next_player:cur_player});
@@ -205,9 +210,9 @@ $(document).ready(function() {
     ).append(
       $('<button>').text('Step Back').attr({id: 'step-back'})
     ).append(
-      $('<button>').text('Step 4 Forward').attr({id: 'step-forward2'})
+      $('<button>').text('Step 5 Forward').attr({id: 'step-forward2'})
     ).append(
-      $('<button>').text('Step 4 Back').attr({id: 'step-back2'})
+      $('<button>').text('Step 5 Back').attr({id: 'step-back2'})
     )
 
     $('#play-game').click(function() {
@@ -232,7 +237,7 @@ $(document).ready(function() {
     });
 
     $('#step-forward2').click(function() {
-      applyActions(4);
+      applyActions(5);
     });
 
     $('#step-back').click(function() {
@@ -240,7 +245,7 @@ $(document).ready(function() {
     });
 
     $('#step-back2').click(function() {
-      reverseActions(4);
+      reverseActions(5);
     });
 
     startGame(data);
