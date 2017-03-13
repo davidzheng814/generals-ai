@@ -29,8 +29,7 @@ for file_ in files:
             and max(a["stars"]) >= 55
             and len(a["afks"]) == 0):
 
-            process = subprocess.Popen(['node',
-                '/Users/dzd123/Documents/2016-2017/generals.io-Replay-Utils/simulator.js', 
+            process = subprocess.Popen(['node', './replay_utils/simulator.js', 
                 file_], stdout=subprocess.PIPE)
             out, err = process.communicate()
 
