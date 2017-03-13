@@ -36,3 +36,30 @@ action move [loc1] [loc2]
 action half_move [loc1] [loc2]
 action no_move
 
+Model 1p training
+-----------------
+input: [num_players] [board_width] [board_height]
+  optional input: "quit"
+  input: state as single-line json: {'board':[[]], 'valid_moves':[3, 8, 20]}
+  output: action as [move]
+  input: [scalar reward]
+
+Model Evaluation:
+-----------------
+Let Q = online Q network
+Let Q- = target Q network
+a = argmax_a Q(s, a)
+
+on update:
+  - sample batch with (r_j, s_{j+1})
+  - calc rewards = r_j + max_a Q-(s_{j+1,}, a)
+  - Perform update on (y_j - Q(
+
+Game State Tensor:
+------------------
+0-1: General (1 at square)
+2-3: Army of One Unit (1 at squares)
+4-5: Army of >= 2 Units (#army at squares)
+6: Mountains (1 at squares)
+7: Neutral Cities (#army at squares)
+8-9: Cities (#army at squares)
