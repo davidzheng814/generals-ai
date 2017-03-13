@@ -3,7 +3,7 @@ import json
 import numpy as np
 import subprocess
 
-REPLAY_FOLDER = '/Users/dzd123/Downloads/replays_prod'
+REPLAY_FOLDER = '../../replays/'
 OUTPUT_FOLDER = ''
 
 files = os.listdir(REPLAY_FOLDER)
